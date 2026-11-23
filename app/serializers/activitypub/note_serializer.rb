@@ -4,7 +4,7 @@ class ActivityPub::NoteSerializer < ActivityPub::Serializer
   include FormattingHelper
   include JsonLdHelper
 
-  context_extensions :atom_uri, :conversation, :sensitive, :voters_count, :quotes, :interaction_policies
+  context_extensions :atom_uri, :conversation, :sensitive, :voters_count, :quotes, :interaction_policies, :events
 
   attributes :id, :type, :summary,
              :in_reply_to, :published, :url,
@@ -31,6 +31,12 @@ class ActivityPub::NoteSerializer < ActivityPub::Serializer
 
   attribute :voters_count, if: :poll_and_voters_count?
 
+  attribute :name, if: :event?
+  attribute :start_time, if: :event?
+  attribute :timezone, if: :event_time_zone?
+  attribute :location, if: :event_location?
+  attribute :join_mode, if: :event?
+
   attribute :quote, if: :quote?
   attribute :quote, key: :_misskey_quote, if: :serializable_quote?
   attribute :quote, key: :quote_uri, if: :serializable_quote?
@@ -43,7 +49,13 @@ class ActivityPub::NoteSerializer < ActivityPub::Serializer
   end
 
   def type
-    object.preloadable_poll ? 'Question' : 'Note'
+    if object.preloadable_poll
+      'Question'
+    elsif object.event
+      'Event'
+    else
+      'Note'
+    end
   end
 
   def summary
@@ -208,6 +220,39 @@ class ActivityPub::NoteSerializer < ActivityPub::Serializer
 
   def poll_and_voters_count?
     object.preloadable_poll&.voters_count
+  end
+
+  def event?
+    object.event.present?
+  end
+
+  def event_time_zone?
+    object.event&.time_zone.present?
+  end
+
+  def event_location?
+    object.event&.location.present?
+  end
+
+  def name
+    object.event.name
+  end
+
+  def start_time
+    object.event.starts_at.iso8601
+  end
+
+  def timezone
+    object.event.time_zone
+  end
+
+  def location
+    { type: 'Place', name: object.event.location }
+  end
+
+  # Mastodon does not handle RSVPs, as recommended by FEP-8a8e
+  def join_mode
+    'none'
   end
 
   def quote?

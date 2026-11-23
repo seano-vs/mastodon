@@ -33,6 +33,10 @@ module ContextHelper
       'showMedia' => 'toot:showMedia',
       'showRepliesInMedia' => 'toot:showRepliesInMedia',
     },
+    events: {
+      'timezone' => 'https://w3id.org/fep/8a8e/timezone',
+      'joinMode' => 'https://w3id.org/fep/8a8e/joinMode',
+    },
     quote_requests: { 'QuoteRequest' => 'https://w3id.org/fep/044f#QuoteRequest' },
     quotes: {
       'quote' => { '@id' => 'https://w3id.org/fep/044f#quote', '@type' => '@id' },

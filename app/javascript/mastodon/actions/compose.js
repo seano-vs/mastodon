@@ -6,6 +6,7 @@ import { throttle } from 'lodash';
 import api from '@/mastodon/api';
 import { browserHistory } from '@/mastodon/components/router';
 import { countableText } from '@/mastodon/features/compose/util/counter';
+import { composeEventToParams, isComposeEventComplete } from '@/mastodon/features/compose/util/event';
 import { tagHistory } from '@/mastodon/settings';
 import { emojiMartSearch } from '@/mastodon/features/emoji/picker';
 
@@ -90,6 +91,7 @@ const messages = defineMessages({
   published: { id: 'compose.published.body', defaultMessage: 'Post published.' },
   saved: { id: 'compose.saved.body', defaultMessage: 'Post saved.' },
   blankPostError: { id: 'compose.error.blank_post', defaultMessage: 'Post can\'t be blank.' },
+  incompleteEventError: { id: 'compose.error.incomplete_event', defaultMessage: 'Events need a title, a date and a time.' },
   messagePublished: { id: 'compose.message.published.body', defaultMessage: 'Message sent' },
   messageSaved: { id: 'compose.message.saved.body', defaultMessage: 'Message saved' },
 });
@@ -182,12 +184,21 @@ export function submitCompose(successCallback) {
     const media        = getState().getIn(['compose', 'media_attachments']);
     const statusId     = getState().getIn(['compose', 'id'], null);
     const hasQuote     = !!getState().getIn(['compose', 'quoted_status_id']);
+    const event        = getState().getIn(['compose', 'event']);
     const spoiler_text = getState().getIn(['compose', 'spoiler']) ? getState().getIn(['compose', 'spoiler_text'], '') : '';
 
     const fulltext = `${spoiler_text ?? ''}${countableText(statusText ?? '')}`;
     const hasText = fulltext.trim().length > 0;
 
-    if (!(hasText || media.size !== 0 || (hasQuote && spoiler_text?.length))) {
+    if (event && !isComposeEventComplete(event)) {
+      dispatch(showAlert({
+        message: messages.incompleteEventError,
+      }));
+
+      return;
+    }
+
+    if (!(hasText || media.size !== 0 || event || (hasQuote && spoiler_text?.length))) {
       dispatch(showAlert({
         message: messages.blankPostError,
       }));
@@ -234,6 +245,7 @@ export function submitCompose(successCallback) {
         sensitive,
         visibility,
         poll: getState().getIn(['compose', 'poll'], null),
+        event: event ? composeEventToParams(event) : null,
         language: getState().getIn(['compose', 'language']),
         quoted_status_id: getState().getIn(['compose', 'quoted_status_id']),
         quote_approval_policy: visibility === 'private' || visibility === 'direct' ? 'nobody' : getState().getIn(['compose', 'quote_policy']),

@@ -7,11 +7,13 @@ import classNames from 'classnames';
 
 import {
   ImageSquareIcon,
+  CalendarBlankIcon,
   ChartBarHorizontalIcon,
   WarningCircleIcon,
 } from '@phosphor-icons/react';
 
 import { addPoll, uploadCompose } from '@/mastodon/actions/compose';
+import { addComposeEvent } from '@/mastodon/actions/compose_typed';
 import { Button, IconButton } from '@/mastodon/components/button';
 import type { OnEmojiPick } from '@/mastodon/components/emoji/picker';
 import { EmojiPickerButton } from '@/mastodon/components/emoji/picker';
@@ -20,6 +22,7 @@ import {
   useAppDispatch,
   useAppSelector,
 } from '@/mastodon/store';
+import { isServerFeatureEnabled } from '@/mastodon/utils/environment';
 
 import classes from '../styles.module.scss';
 
@@ -35,7 +38,7 @@ export const ComposeFooter: React.FC<{ onEmojiPick: OnEmojiPick }> = ({
 }) => {
   const type = useAppSelector(selectComposeType);
   const { current, max } = useAppSelector(selectComposeCharsCount);
-  const { hasPoll, quotedStatusId } = useAppSelector(
+  const { hasPoll, hasEvent, quotedStatusId } = useAppSelector(
     selectComposeHasAttachments,
   );
   const hasQuote = !!quotedStatusId;
@@ -47,6 +50,9 @@ export const ComposeFooter: React.FC<{ onEmojiPick: OnEmojiPick }> = ({
   const dispatch = useAppDispatch();
   const handlePoll = useCallback(() => {
     dispatch(addPoll());
+  }, [dispatch]);
+  const handleEvent = useCallback(() => {
+    dispatch(addComposeEvent());
   }, [dispatch]);
 
   let publishText = (
@@ -69,7 +75,7 @@ export const ComposeFooter: React.FC<{ onEmojiPick: OnEmojiPick }> = ({
       <IconButton
         size='sm'
         icon={ChartBarHorizontalIcon}
-        disabled={hasQuote || hasPoll}
+        disabled={hasQuote || hasPoll || hasEvent}
         onClick={handlePoll}
       >
         <FormattedMessage
@@ -77,6 +83,20 @@ export const ComposeFooter: React.FC<{ onEmojiPick: OnEmojiPick }> = ({
           defaultMessage='Add a poll'
         />
       </IconButton>
+
+      {isServerFeatureEnabled('outgoing_events') && (
+        <IconButton
+          size='sm'
+          icon={CalendarBlankIcon}
+          disabled={hasPoll || hasEvent}
+          onClick={handleEvent}
+        >
+          <FormattedMessage
+            id='event_button.add_event'
+            defaultMessage='Add an event'
+          />
+        </IconButton>
+      )}
 
       <div className={classes.flexGrowWrap}>
         <span

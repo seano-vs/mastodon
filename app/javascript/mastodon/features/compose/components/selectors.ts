@@ -5,10 +5,12 @@ import type { ApiQuotePolicy } from '@/mastodon/api_types/quotes';
 import { immutableListToSuggestions } from '@/mastodon/components/autosuggest/utils';
 import type { StatusVisibility } from '@/mastodon/models/status';
 import type { ComposeType } from '@/mastodon/reducers/slices/composer';
+import type { RootState } from '@/mastodon/store';
 import { createAppSelector } from '@/mastodon/store';
 import { DAY, MINUTE } from '@/mastodon/utils/time';
 
 import { countableText } from '../util/counter';
+import type { ComposeEvent } from '../util/event';
 
 export const selectComposePrivacy = createAppSelector(
   [
@@ -77,6 +79,7 @@ export const selectComposeCharsCount = createAppSelector(
 export const selectComposeHasAttachments = createAppSelector(
   [
     (state) => !!state.compose.get('poll'),
+    (state) => !!state.compose.get('event'),
     (state) => state.compose.get('quoted_status_id') as string | null,
     (state) =>
       state.compose.get('media_attachments') as
@@ -87,6 +90,7 @@ export const selectComposeHasAttachments = createAppSelector(
   ],
   (
     hasPoll,
+    hasEvent,
     quotedStatusId,
     attachments,
     pendingAttachments,
@@ -94,6 +98,7 @@ export const selectComposeHasAttachments = createAppSelector(
   ) => {
     return {
       hasPoll,
+      hasEvent,
       hasAttachments:
         (attachments && attachments.size > 0) || pendingAttachments > 0,
       quotedStatusId,
@@ -176,6 +181,17 @@ export const selectComposePoll = createAppSelector(
       ...config,
     };
   },
+);
+
+export const selectComposeEvent = (state: RootState) =>
+  state.compose.get('event') as ComposeEvent | null;
+
+export const selectComposeEventLimits = createAppSelector(
+  [(state) => state.server.server.item?.configuration.events],
+  (config) => ({
+    maxNameLength: config?.max_name_length ?? 100,
+    maxLocationLength: config?.max_location_length ?? 200,
+  }),
 );
 
 export const selectSuggestions = createAppSelector(

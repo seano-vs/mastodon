@@ -131,6 +131,15 @@ class REST::InstanceSerializer < ActiveModel::Serializer
         max_name_length: Collection::NAME_LENGTH_LOCAL_LIMIT,
         max_description_length: Collection::DESCRIPTION_LENGTH_LOCAL_LIMIT,
       },
+    }.tap do |configuration|
+      configuration[:events] = events_configuration if Mastodon::Feature.outgoing_events_enabled?
+    end
+  end
+
+  def events_configuration
+    {
+      max_name_length: Event::NAME_LENGTH_LOCAL_LIMIT,
+      max_location_length: Event::LOCATION_LENGTH_LOCAL_LIMIT,
     }
   end
 

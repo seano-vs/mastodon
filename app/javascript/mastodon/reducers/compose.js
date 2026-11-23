@@ -13,7 +13,11 @@ import {
   addPollOption,
   updatePollOption,
   deletePollOption,
+  addComposeEvent,
+  removeComposeEvent,
+  changeComposeEvent,
 } from '@/mastodon/actions/compose_typed';
+import { composeEventFromApi, emptyComposeEvent } from '@/mastodon/features/compose/util/event';
 import { timelineDelete } from 'mastodon/actions/timelines_typed';
 
 import {
@@ -88,6 +92,7 @@ const initialState = ImmutableMap({
   media_attachments: ImmutableList(),
   pending_media_attachments: 0,
   poll: null,
+  event: null,
   suggestion_token: null,
   suggestions: ImmutableList(),
   default_privacy: 'public',
@@ -139,6 +144,7 @@ function clearAll(state) {
     map.update('media_attachments', list => list.clear());
     map.set('progress', 0);
     map.set('poll', null);
+    map.set('event', null);
     map.set('idempotencyKey', uuid());
     map.set('quoted_status_id', null);
     map.set('quote_policy', state.get('default_quote_policy'));
@@ -411,6 +417,12 @@ export const composeReducer = (state = initialState, action) => {
       }
       return options.set(index, text);
     })
+  } else if (addComposeEvent.match(action)) {
+    return state.set('event', emptyComposeEvent());
+  } else if (removeComposeEvent.match(action)) {
+    return state.set('event', null);
+  } else if (changeComposeEvent.match(action)) {
+    return state.update('event', event => ({ ...event, ...action.payload }));
   } else if (deletePollOption.match(action)) {
     return state.updateIn(['poll', 'options'], (options) => {
       if (!isList(options)) {
@@ -612,6 +624,10 @@ export const composeReducer = (state = initialState, action) => {
           expires_in: expiresInFromExpiresAt(action.status.get('poll').expires_at),
         }));
       }
+
+      if (action.status.get('event')) {
+        map.set('event', composeEventFromApi(action.status.get('event').toJS()));
+      }
     });
   case COMPOSE_SET_STATUS:
     return state.withMutations(map => {
@@ -645,6 +661,10 @@ export const composeReducer = (state = initialState, action) => {
           multiple: action.status.get('poll').multiple,
           expires_in: expiresInFromExpiresAt(action.status.get('poll').expires_at),
         }));
+      }
+
+      if (action.status.get('event')) {
+        map.set('event', composeEventFromApi(action.status.get('event').toJS()));
       }
     });
   case COMPOSE_POLL_ADD:

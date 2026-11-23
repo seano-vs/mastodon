@@ -7,6 +7,7 @@ import { apiUpdateMedia } from '@/mastodon/api/compose';
 import { apiGetSearch } from '@/mastodon/api/search';
 import type { ApiMediaAttachmentJSON } from '@/mastodon/api_types/media_attachments';
 import type { ApiQuotePolicy } from '@/mastodon/api_types/quotes';
+import type { ComposeEvent } from '@/mastodon/features/compose/util/event';
 import type { MediaAttachment } from '@/mastodon/models/media_attachment';
 import type {
   MediaAttachmentShape,
@@ -371,6 +372,14 @@ export const updatePollOption = createAppThunk(
 
 export const deletePollOption = createAction<{ index: number }>(
   'compose/deletePollOption',
+);
+
+export const addComposeEvent = createAction('compose/addEvent');
+
+export const removeComposeEvent = createAction('compose/removeEvent');
+
+export const changeComposeEvent = createAction<Partial<ComposeEvent>>(
+  'compose/changeEvent',
 );
 
 const urlLikeRegex = /^https?:\/\/[^\s]+\/[^\s]+$/i;

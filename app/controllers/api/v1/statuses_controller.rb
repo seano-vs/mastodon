@@ -42,6 +42,7 @@ class Api::V1::StatusesController < Api::BaseController
       scheduled_at: status_params[:scheduled_at],
       application: doorkeeper_token.application,
       poll: status_params[:poll],
+      event: (status_params[:event] if Mastodon::Feature.outgoing_events_enabled?),
       allowed_mentions: status_params[:allowed_mentions],
       idempotency: request.headers['Idempotency-Key'],
       with_rate_limit: true
@@ -66,6 +67,7 @@ class Api::V1::StatusesController < Api::BaseController
       poll: status_params[:poll],
     }
 
+    update_options[:event] = status_params[:event] if Mastodon::Feature.outgoing_events_enabled?
     update_options[:quote_approval_policy] = quote_approval_policy if status_params[:quote_approval_policy].present?
 
     UpdateStatusService.new.call(@status, current_account.id, update_options)
@@ -154,6 +156,12 @@ class Api::V1::StatusesController < Api::BaseController
         :hide_totals,
         :expires_in,
         options: [],
+      ],
+      event: [
+        :name,
+        :starts_at,
+        :time_zone,
+        :location,
       ]
     )
   end

@@ -121,6 +121,12 @@ export interface ApiInstanceJSON {
       max_expiration: number;
     };
 
+    // Only present when the `outgoing_events` experimental feature is enabled
+    events?: {
+      max_name_length: number;
+      max_location_length: number;
+    };
+
     translation: {
       enabled: boolean;
     };

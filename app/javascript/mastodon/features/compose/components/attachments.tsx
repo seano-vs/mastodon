@@ -12,6 +12,7 @@ import { attachmentAspectRatio } from '@/mastodon/components/status/utils';
 import { useAppDispatch, useAppSelector } from '@/mastodon/store';
 
 import classes from './attachments.module.scss';
+import { ComposeEventForm } from './event';
 import { ComposePoll } from './poll';
 import { ComposeQuote } from './quote';
 import {
@@ -25,16 +26,23 @@ import { ComposeUpload } from './upload';
 export const ComposeAttachments: React.FC<{ className?: string }> = ({
   className,
 }) => {
-  const { hasPoll, hasAttachments, quotedStatusId, isFetchingLink } =
+  const { hasPoll, hasEvent, hasAttachments, quotedStatusId, isFetchingLink } =
     useAppSelector(selectComposeHasAttachments);
 
-  if (!hasPoll && !hasAttachments && !quotedStatusId && !isFetchingLink) {
+  if (
+    !hasPoll &&
+    !hasEvent &&
+    !hasAttachments &&
+    !quotedStatusId &&
+    !isFetchingLink
+  ) {
     return null;
   }
 
   return (
     <div className={className}>
       {hasPoll && <ComposePoll />}
+      {hasEvent && <ComposeEventForm />}
       {hasAttachments && <ComposeMediaAttachments />}
       {quotedStatusId && <ComposeQuote id={quotedStatusId} />}
       {!quotedStatusId && isFetchingLink && <StatusQuotePending />}
