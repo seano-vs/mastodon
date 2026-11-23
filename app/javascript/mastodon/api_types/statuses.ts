@@ -3,6 +3,7 @@
 import type { ApiAccountJSON } from './accounts';
 import type { ApiCollectionJSON } from './collections';
 import type { ApiCustomEmojiJSON } from './custom_emoji';
+import type { ApiEventJSON } from './events';
 import type { ApiMediaAttachmentJSON } from './media_attachments';
 import type { ApiPollJSON, ApiPollOptionJSON } from './polls';
 import type { ApiQuoteJSON, ApiQuotePolicyJSON } from './quotes';
@@ -121,6 +122,7 @@ export interface ApiStatusJSON {
 
   card?: ApiPreviewCardJSON;
   poll?: ApiPollJSON;
+  event?: ApiEventJSON;
   quote?: ApiQuoteJSON;
   quote_approval?: ApiQuotePolicyJSON;
 }

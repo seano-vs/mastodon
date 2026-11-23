@@ -4,6 +4,7 @@ import type { Simplify } from 'type-fest';
 
 import type { ApiCollectionJSON } from '@/mastodon/api_types/collections';
 import type { ApiCustomEmojiJSON } from '@/mastodon/api_types/custom_emoji';
+import type { ApiEventJSON } from '@/mastodon/api_types/events';
 import type {
   ApiAudioAttachmentJSON,
   ApiGifvAttachmentJSON,
@@ -69,6 +70,7 @@ export interface StatusShape {
   emojis: Pick<ApiCustomEmojiJSON, 'shortcode' | 'static_url' | 'url'>[];
   media_attachments: MediaAttachmentShape[];
   mentions: ApiMentionJSON[];
+  event?: ApiEventJSON;
   poll?: string;
   quote?: QuotedStatus;
   reblog?: string;

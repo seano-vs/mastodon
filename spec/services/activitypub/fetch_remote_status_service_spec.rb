@@ -113,7 +113,7 @@ RSpec.describe ActivityPub::FetchRemoteStatusService do
       end
     end
 
-    context 'with Event object' do
+    context 'with Event object without a start time' do
       let(:object) do
         {
           '@context': 'https://www.w3.org/ns/activitystreams',
@@ -133,7 +133,7 @@ RSpec.describe ActivityPub::FetchRemoteStatusService do
       end
     end
 
-    context 'with Event object that contains a HTML summary' do
+    context 'with Event object that has a start time' do
       let(:object) do
         {
           '@context': 'https://www.w3.org/ns/activitystreams',
@@ -156,8 +156,8 @@ RSpec.describe ActivityPub::FetchRemoteStatusService do
 
         expect(status).to_not be_nil
         expect(status.url).to eq 'https://foo.bar/@foo/1234'
-        expect(status.text).to start_with "<h2>#{object[:name]}</h2>\n\n#{object[:summary]}\n\n"
-        expect(status.text).to include "href=\"#{object[:id]}\""
+        expect(status.text).to eq object[:content]
+        expect(status.event).to have_attributes(name: object[:name], location: object[:location][:name])
       end
     end
 

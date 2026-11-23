@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_23_145826) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_27_120000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -556,6 +556,17 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_23_145826) do
     t.datetime "updated_at", null: false
     t.index ["account_id", "email"], name: "index_email_subscriptions_on_account_id_and_email", unique: true
     t.index ["confirmation_token"], name: "index_email_subscriptions_on_confirmation_token", unique: true, where: "(confirmation_token IS NOT NULL)"
+  end
+
+  create_table "events", force: :cascade do |t|
+    t.bigint "status_id", null: false
+    t.string "name", null: false
+    t.datetime "starts_at", null: false
+    t.string "time_zone"
+    t.string "location"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["status_id"], name: "index_events_on_status_id", unique: true
   end
 
   create_table "fasp_backfill_requests", force: :cascade do |t|
@@ -1628,6 +1639,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_23_145826) do
   add_foreign_key "domain_blocks", "moderation_subscriptions", on_delete: :nullify
   add_foreign_key "email_domain_blocks", "email_domain_blocks", column: "parent_id", on_delete: :cascade
   add_foreign_key "email_subscriptions", "accounts", on_delete: :cascade
+  add_foreign_key "events", "statuses", on_delete: :cascade
   add_foreign_key "fasp_backfill_requests", "fasp_providers"
   add_foreign_key "fasp_capabilities", "fasp_providers"
   add_foreign_key "fasp_debug_callbacks", "fasp_providers"

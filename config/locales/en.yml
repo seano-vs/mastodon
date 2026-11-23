@@ -1886,6 +1886,9 @@ en:
     '503': The page could not be served due to a temporary server failure.
     go_home: Go home
     noscript_html: To use the Mastodon web application, please enable JavaScript. Alternatively, try one of the <a href="%{apps_path}">native apps</a> for Mastodon for your platform.
+  events:
+    errors:
+      poll_conflict: A post cannot have both an event and a poll
   existing_username_validator:
     not_found: could not find a local user with that username
     not_found_multiple: could not find %{usernames}

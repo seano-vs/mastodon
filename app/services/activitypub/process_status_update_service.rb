@@ -20,6 +20,7 @@ class ActivityPub::ProcessStatusUpdateService < BaseService
     @account                   = status.account
     @media_attachments_changed = false
     @poll_changed              = false
+    @event_changed             = false
     @quote_changed             = false
     @request_id                = request_id
     @quote                     = nil
@@ -52,6 +53,7 @@ class ActivityPub::ProcessStatusUpdateService < BaseService
         update_media_attachments!
         update_interaction_policies!
         update_poll!
+        update_event!
         update_immediate_attributes!
         update_metadata!
         update_counts!
@@ -75,12 +77,13 @@ class ActivityPub::ProcessStatusUpdateService < BaseService
     with_redis_lock("create:#{@uri}") do
       update_interaction_policies!
       update_poll!(allow_significant_changes: false)
+      update_event!
       queue_poll_notifications!
       update_quote_approval!
       update_counts!
     end
 
-    broadcast_updates! if @status.quote&.state_previously_changed?
+    broadcast_updates! if @status.quote&.state_previously_changed? || @event_changed
   end
 
   def update_interaction_policies!
@@ -179,13 +182,28 @@ class ActivityPub::ProcessStatusUpdateService < BaseService
     end
   end
 
+  def update_event!
+    event_parser = ActivityPub::Parser::EventParser.new(@json)
+
+    if event_parser.valid?
+      event = @status.event || @status.build_event
+      event.assign_attributes(event_parser.attributes)
+      @event_changed = event.changed?
+      event.save!
+    elsif @status.event.present?
+      @status.event.destroy!
+      @status.reload_event
+      @event_changed = true
+    end
+  end
+
   def update_immediate_attributes!
     @status.text         = @status_parser.processed_text
     @status.spoiler_text = @status_parser.processed_spoiler_text
     @status.sensitive    = @account.sensitized? || @status_parser.sensitive || false
     @status.language     = @status_parser.language
 
-    @significant_changes = text_significantly_changed? || @status.spoiler_text_changed? || @media_attachments_changed || @poll_changed || @quote_changed
+    @significant_changes = text_significantly_changed? || @status.spoiler_text_changed? || @media_attachments_changed || @poll_changed || @event_changed || @quote_changed
 
     @status.edited_at = @status_parser.edited_at if significant_changes?
 

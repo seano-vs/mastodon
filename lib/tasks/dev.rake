@@ -446,6 +446,20 @@ namespace :dev do
         quote_approval_policy: InteractionPolicy::POLICY_FLAGS[:public]
       ).find_or_create_by!(id: 10_000_030)
 
+      Status.create_with(
+        text: '<p>Help us clean up Central Park before the holidays! Gloves, bags and hot cocoa are provided. Meet by the Angel of the Waters fountain.</p>',
+        account: remote_account,
+        visibility: :public,
+        uri: 'https://example.org/foo/bar/events/1',
+        url: 'https://example.org/foo/bar/events/1',
+        event_attributes: {
+          name: 'Central Park volunteer cleanup',
+          starts_at: 1.week.from_now.in_time_zone('America/New_York').change(hour: 10),
+          time_zone: 'America/New_York',
+          location: 'Bethesda Terrace, Central Park, New York, NY',
+        }
+      ).find_or_create_by!(id: 10_000_033)
+
       showcase_collection = Collection.create_with(
         account: showcase_account,
         name: 'Showcase Collection',

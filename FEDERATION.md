@@ -17,6 +17,7 @@
 - [FEP-3b86: Activity Intents](https://codeberg.org/fediverse/fep/src/branch/main/fep/3b86/fep-3b86.md): offer handlers for `Object` and `Create` (with support for the `content` parameter only), has support for the `Follow`, `Announce`, `Like` and `Object` intents
 - [FEP-521a: Representing actor's public keys](https://codeberg.org/fediverse/fep/src/branch/main/fep/521a/fep-521a.md): starting with Mastodon 4.7, we support RSA and Ed25519 keys exposed through FEP-521a, but we do not expose our keys this way
 - [FEP-8b32: Object Integrity Proofs](https://codeberg.org/fediverse/fep/src/branch/main/fep/8b32/fep-8b32.md): starting with Mastodon 4.7, we support top-level Object Integrity Proofs using the `eddsa-jcs-2022` cryptosuite, but we do not emit any Object Integrity Proof
+- [FEP-8a8e: A common approach to using the Event object type](https://codeberg.org/fediverse/fep/src/branch/main/fep/8a8e/fep-8a8e.md): `Event` objects with a `name` and a `startTime` are supported, along with their `timezone` and first `location`; other properties are ignored, and `Event` objects lacking a `name` or `startTime` are converted to a link as for other unsupported object types
 
 ## ActivityPub in Mastodon
 
@@ -89,6 +90,8 @@ The following table summarizes those limits.
 | Profile fields (actor `PropertyValue` attachments) name/value | 2047       | Field name/value is truncated      |
 | Number of profile fields (actor `PropertyValue` attachments)  | 50         | Fields list is truncated           |
 | Poll options (number of `anyOf`/`oneOf` in a `Question`)      | 500        | Items list is truncated            |
+| Event title (`Event` `name`)                                  | 256        | Title will be truncated            |
+| Event location (`Event` `location` name and address)          | 2048       | Location will be truncated         |
 | Account username (actor `preferredUsername`) length           | 2048       | **Actor will be rejected**         |
 | Account display name (actor `name`) length                    | 2048       | Display name will be truncated     |
 | Account note (actor `summary`) length                         | 20kB       | Account note will be truncated     |
