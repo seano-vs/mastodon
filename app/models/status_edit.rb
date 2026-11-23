@@ -52,6 +52,11 @@ class StatusEdit < ApplicationRecord
     false
   end
 
+  # Events are not recorded in the edit history
+  def with_event?
+    false
+  end
+
   def with_media?
     ordered_media_attachments.any?
   end

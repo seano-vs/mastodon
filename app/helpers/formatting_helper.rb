@@ -83,10 +83,10 @@ module FormattingHelper
   end
 
   def rss_content_postroll(status)
-    return unless status.preloadable_poll
-
-    tag.p do
-      poll_option_tags(status)
+    if status.preloadable_poll
+      tag.p { poll_option_tags(status) }
+    elsif status.with_event?
+      tag.p { event_summary(status.event) }
     end
   end
 

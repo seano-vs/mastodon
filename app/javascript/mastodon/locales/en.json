@@ -1324,6 +1324,7 @@
   "status.edited_badge": "Edited",
   "status.edited_hint": "Show version history",
   "status.embed": "Get embed code",
+  "status.event.add_to_calendar": "Add to calendar",
   "status.favourite": "Favorite",
   "status.filter": "Filter this post",
   "status.follow": "Follow @{name}",
