@@ -119,6 +119,7 @@ class ActivityPub::Activity::Create < ActivityPub::Activity
       media_attachment_ids: attachment_ids,
       ordered_media_attachment_ids: attachment_ids,
       poll: process_poll,
+      event: process_event,
       quote_approval_policy: @status_parser.quote_policy,
     }
   end
@@ -356,6 +357,12 @@ class ActivityPub::Activity::Create < ActivityPub::Activity
       cached_tallies: poll_parser.cached_tallies,
       voters_count: poll_parser.voters_count
     )
+  end
+
+  def process_event
+    event_parser = ActivityPub::Parser::EventParser.new(@object)
+
+    Event.new(event_parser.attributes) if event_parser.valid?
   end
 
   def poll_vote?

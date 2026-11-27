@@ -61,6 +61,18 @@ RSpec.describe 'Admin::Statuses' do
     end
   end
 
+  describe 'Viewing a status with an event' do
+    before { Fabricate(:event, status:, name: 'Free Knicks tickets giveaway', location: 'Washington Square Park') }
+
+    it 'shows the event details' do
+      visit admin_account_status_path(account.id, status)
+
+      expect(page)
+        .to have_text('Free Knicks tickets giveaway')
+        .and have_text('Washington Square Park')
+    end
+  end
+
   describe 'Performing batch updates' do
     shared_examples 'reporting a selected status' do
       it 'creates a report for the selected post and shows the report page' do

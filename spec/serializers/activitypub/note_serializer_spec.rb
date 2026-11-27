@@ -126,4 +126,19 @@ RSpec.describe ActivityPub::NoteSerializer do
       })
     end
   end
+
+  context 'with an event' do
+    let!(:event) { Fabricate(:event, status: parent) }
+
+    it 'has the expected shape (using FEP-8a8e)' do
+      expect(subject).to include({
+        'type' => 'Event',
+        'name' => 'Central Park cleanup',
+        'startTime' => event.starts_at.iso8601,
+        'timezone' => 'America/New_York',
+        'location' => { 'type' => 'Place', 'name' => 'Central Park' },
+        'joinMode' => 'none',
+      })
+    end
+  end
 end

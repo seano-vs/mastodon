@@ -48,6 +48,7 @@ class Status < ApplicationRecord
   CACHEABLE_ASSOCIATIONS = [
     :application,
     :conversation,
+    :event,
     :media_attachments,
     :preloadable_poll,
     :status_stat,
@@ -114,16 +115,18 @@ class Status < ApplicationRecord
   has_one :notification, as: :activity, dependent: :destroy
   has_one :status_stat, inverse_of: :status, dependent: nil
   has_one :poll, inverse_of: :status, dependent: :destroy
+  has_one :event, inverse_of: :status, dependent: :destroy
   has_one :trend, class_name: 'StatusTrend', inverse_of: :status, dependent: nil
   has_one :quote, inverse_of: :status, dependent: :destroy
 
   validates :uri, uniqueness: true, presence: true, unless: :local?
-  validates :text, presence: true, unless: -> { with_media? || reblog? || with_quote? }
+  validates :text, presence: true, unless: -> { with_media? || reblog? || with_quote? || with_event? }
   validates_with StatusLengthValidator
   validates_with DisallowedHashtagsValidator
   validates :reblog, uniqueness: { scope: :account }, if: :reblog?
 
   accepts_nested_attributes_for :poll
+  accepts_nested_attributes_for :event
 
   default_scope { recent.kept }
 
@@ -265,6 +268,10 @@ class Status < ApplicationRecord
 
   def with_poll?
     preloadable_poll.present?
+  end
+
+  def with_event?
+    event.present?
   end
 
   def non_sensitive_with_media?

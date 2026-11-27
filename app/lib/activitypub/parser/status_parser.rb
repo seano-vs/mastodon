@@ -162,8 +162,9 @@ class ActivityPub::Parser::StatusParser
     as_array(@object['quoteAuthorization']).first
   end
 
+  # Events we can make sense of are kept as-is, others are converted to a link
   def converted_object_type?
-    equals_or_includes_any?(@object['type'], ActivityPub::Activity::CONVERTED_TYPES)
+    equals_or_includes_any?(@object['type'], ActivityPub::Activity::CONVERTED_TYPES) && !ActivityPub::Parser::EventParser.new(@object).valid?
   end
 
   def audience_to

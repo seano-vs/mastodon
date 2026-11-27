@@ -151,3 +151,28 @@
 .pollDurationSelect {
   text-align: center;
 }
+
+// Events
+
+.event {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  border: 0.5px solid var(--color-text-tertiary);
+  border-radius: var(--radius-4);
+  padding: var(--space-2);
+}
+
+.eventWhen {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+
+  > * {
+    flex: 1 1 10rem;
+  }
+}
+
+.eventDelete {
+  align-self: flex-end;
+}

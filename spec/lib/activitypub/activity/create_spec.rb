@@ -1011,6 +1011,49 @@ RSpec.describe ActivityPub::Activity::Create do
         end
       end
 
+      context 'with an event' do
+        let(:object_json) do
+          build_object(
+            type: 'Event',
+            name: 'Central Park cleanup',
+            content: 'Bring gloves!',
+            startTime: '2026-12-31T10:00:00Z',
+            timezone: 'America/New_York',
+            location: { type: 'Place', name: 'Central Park' }
+          )
+        end
+
+        it 'creates status with an event' do
+          expect { subject.perform }.to change(sender.statuses, :count).by(1)
+
+          status = sender.statuses.first
+          expect(status.text).to eq 'Bring gloves!'
+          expect(status.event).to have_attributes(
+            name: 'Central Park cleanup',
+            starts_at: '2026-12-31T10:00:00Z'.to_datetime,
+            time_zone: 'America/New_York',
+            location: 'Central Park'
+          )
+        end
+      end
+
+      context 'with an event without content' do
+        let(:object_json) do
+          build_object(
+            type: 'Event',
+            name: 'Central Park cleanup',
+            content: nil,
+            startTime: '2026-12-31T10:00:00Z'
+          )
+        end
+
+        it 'creates status with an event' do
+          expect { subject.perform }.to change(sender.statuses, :count).by(1)
+
+          expect(sender.statuses.first.event).to have_attributes(name: 'Central Park cleanup')
+        end
+      end
+
       context 'with an unverifiable quote of a known post, with summary (CW) but no text' do
         let(:quoted_status) { Fabricate(:status, account: Fabricate(:account, domain: 'example.com')) }
 

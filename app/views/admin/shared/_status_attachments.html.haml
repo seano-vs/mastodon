@@ -14,6 +14,9 @@
     %button.button.button-secondary{ disabled: true }
       = t('polls.vote')
 
+- if status.with_event?
+  %p.status__event= event_summary(status.event)
+
 - if status.with_preview_card?
   = render partial: 'admin/shared/preview_card', locals: { preview_card: status.preview_card }
 

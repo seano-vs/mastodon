@@ -40,5 +40,23 @@ RSpec.describe REST::InstanceSerializer do
           )
         )
     end
+
+    it 'does not return event limits' do
+      expect(serialization['configuration']).to_not have_key('events')
+    end
+
+    context 'when the outgoing_events feature is enabled', feature: :outgoing_events do
+      it 'returns the event limits' do
+        expect(serialization.deep_symbolize_keys)
+          .to include(
+            configuration: include(
+              events: {
+                max_name_length: Event::NAME_LENGTH_LOCAL_LIMIT,
+                max_location_length: Event::LOCATION_LENGTH_LOCAL_LIMIT,
+              }
+            )
+          )
+      end
+    end
   end
 end

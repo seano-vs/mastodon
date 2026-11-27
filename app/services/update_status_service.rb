@@ -12,6 +12,7 @@ class UpdateStatusService < BaseService
   # @option options [Array<Integer>] :media_ids
   # @option options [Array<Hash>] :media_attributes
   # @option options [Hash] :poll
+  # @option options [Hash] :event
   # @option options [String] :text
   # @option options [String] :spoiler_text
   # @option options [Boolean] :sensitive
@@ -22,11 +23,13 @@ class UpdateStatusService < BaseService
     @account_id                = account_id
     @media_attachments_changed = false
     @poll_changed              = false
+    @event_changed             = false
 
     Status.transaction do
       create_previous_edit!
       update_media_attachments! if @options.key?(:media_ids)
       update_poll! if @options.key?(:poll)
+      update_event! if @options.key?(:event)
       update_immediate_attributes!
       create_edit!
     end
@@ -110,6 +113,19 @@ class UpdateStatusService < BaseService
     @poll_changed = true if @previous_expires_at != @status.preloadable_poll&.expires_at
   end
 
+  def update_event!
+    if @options[:event].present?
+      event = @status.event || @status.build_event
+      event.assign_attributes(@options[:event].slice(:name, :starts_at, :time_zone, :location))
+      @event_changed = event.changed?
+      event.save!
+    elsif @status.event.present?
+      @status.event.destroy!
+      @status.reload_event
+      @event_changed = true
+    end
+  end
+
   def update_immediate_attributes!
     if @options.key?(:text)
       @status.text = @options[:text].presence || ''
@@ -172,6 +188,6 @@ class UpdateStatusService < BaseService
   end
 
   def significant_changes?
-    @status.changed? || @poll_changed || @media_attachments_changed
+    @status.changed? || @poll_changed || @event_changed || @media_attachments_changed
   end
 end

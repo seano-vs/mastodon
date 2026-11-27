@@ -20,6 +20,7 @@ import { Poll } from '../poll';
 import { StatusActionBar } from './action_bar';
 import { StatusAttachments } from './attachments';
 import { StatusContent } from './content';
+import { StatusEvent } from './event';
 import { StatusHashtagBar } from './hashtag_bar';
 import { computeHashtagBarForStatus } from './hashtag_utils';
 import { StatusHeader } from './header';
@@ -252,6 +253,14 @@ export const Status: React.FC<StatusProps> = ({
                   statusUrl={status.uri}
                   accountId={status.account.id}
                   lang={status.translation?.language ?? status.language}
+                />
+              )}
+
+              {status.event && (
+                <StatusEvent
+                  event={status.event}
+                  uri={status.uri}
+                  url={status.url}
                 />
               )}
 

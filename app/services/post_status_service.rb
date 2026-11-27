@@ -42,6 +42,7 @@ class PostStatusService < BaseService
   # @option [String] :language
   # @option [String] :scheduled_at
   # @option [Hash] :poll Optional poll to attach
+  # @option [Hash] :event Optional event to attach (name, starts_at, time_zone, location)
   # @option [Enumerable] :media_ids Optional array of media IDs to attach
   # @option [Doorkeeper::Application] :application
   # @option [String] :idempotency Optional idempotency key
@@ -272,6 +273,7 @@ class PostStatusService < BaseService
       ordered_media_attachment_ids: (@options[:media_ids] || []).map(&:to_i) & @media.map(&:id),
       thread: @in_reply_to,
       poll_attributes: poll_attributes,
+      event_attributes: event_attributes,
       sensitive: @sensitive,
       spoiler_text: @options[:spoiler_text] || '',
       visibility: @visibility,
@@ -294,6 +296,12 @@ class PostStatusService < BaseService
     return if @options[:poll].blank?
 
     @options[:poll].merge(account: @account, voters_count: 0)
+  end
+
+  def event_attributes
+    return if @options[:event].blank?
+
+    @options[:event].slice(:name, :starts_at, :time_zone, :location)
   end
 
   def scheduled_options

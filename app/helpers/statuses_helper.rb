@@ -46,6 +46,12 @@ module StatusesHelper
     status.preloadable_poll.options.map { |o| "[ ] #{o}" }.join("\n")
   end
 
+  def event_summary(event)
+    starts_at = event.starts_at.in_time_zone(event.time_zone.presence || 'UTC')
+
+    [event.name, l(starts_at, format: :with_time_zone), event.location].compact_blank.join(' · ')
+  end
+
   def status_classnames(status, is_quote)
     if is_quote
       'status--is-quote'
@@ -60,6 +66,7 @@ module StatusesHelper
     if status.spoiler_text.blank?
       components << status.text
       components << poll_summary(status)
+      components << event_summary(status.event) if status.with_event?
     end
 
     components.compact_blank.join("\n\n")

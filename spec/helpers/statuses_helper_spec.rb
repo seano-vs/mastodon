@@ -33,6 +33,38 @@ RSpec.describe StatusesHelper do
     it { is_expected.to eq('Attached: 1 image · 1 video · 1 audio') }
   end
 
+  describe '#event_summary' do
+    subject { helper.event_summary(event) }
+
+    let(:event) { Fabricate.build(:event, starts_at: '2026-12-05T15:30:00Z', time_zone: 'America/New_York', location: 'Central Park') }
+
+    it { is_expected.to eq('Central Park cleanup · Dec 05, 2026, 10:30 EST · Central Park') }
+
+    context 'without a time zone or location' do
+      let(:event) { Fabricate.build(:event, starts_at: '2026-12-05T15:30:00Z', time_zone: nil, location: nil) }
+
+      it { is_expected.to eq('Central Park cleanup · Dec 05, 2026, 15:30 UTC') }
+    end
+  end
+
+  describe '#status_description' do
+    subject { helper.status_description(status) }
+
+    let(:status) { Fabricate(:status, text: 'Bring gloves!') }
+
+    before { Fabricate(:event, status:, starts_at: '2026-12-05T15:30:00Z', time_zone: 'America/New_York') }
+
+    it { is_expected.to eq("Bring gloves!\n\nCentral Park cleanup · Dec 05, 2026, 10:30 EST · Central Park") }
+
+    context 'with a content warning' do
+      let(:status) { Fabricate(:status, text: 'Bring gloves!', spoiler_text: 'Cleanup') }
+
+      it 'hides the event along with the text' do
+        expect(subject).to_not include('Central Park cleanup')
+      end
+    end
+  end
+
   describe 'visibility_icon' do
     context 'with a status that is public' do
       let(:status) { Status.new(visibility: 'public') }

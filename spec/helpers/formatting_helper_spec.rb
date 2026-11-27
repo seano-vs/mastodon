@@ -55,6 +55,17 @@ RSpec.describe FormattingHelper do
       end
     end
 
+    context 'with an event' do
+      let(:status) { Fabricate(:status, text: 'Bring gloves!') }
+
+      before { Fabricate(:event, status:, starts_at: '2026-12-05T15:30:00Z', time_zone: 'America/New_York') }
+
+      it 'renders the event after the content' do
+        expect(parsed_result.css('p').last.text)
+          .to eq('Central Park cleanup · Dec 05, 2026, 10:30 EST · Central Park')
+      end
+    end
+
     def parsed_result
       Nokogiri::HTML.fragment(subject)
     end

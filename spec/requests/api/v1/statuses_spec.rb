@@ -154,6 +154,43 @@ RSpec.describe '/api/v1/statuses' do
         end
       end
 
+      context 'with an event', feature: :outgoing_events do
+        let(:params) { { status: 'Bring gloves!', event: { name: 'Central Park cleanup', starts_at: '2026-12-31T10:00:00Z', time_zone: 'America/New_York', location: 'Central Park' } } }
+
+        it 'creates a status with an event', :aggregate_failures do
+          expect { subject }.to change(Event, :count).by(1)
+
+          expect(response).to have_http_status(200)
+          expect(response.parsed_body[:event]).to include(
+            name: 'Central Park cleanup',
+            starts_at: '2026-12-31T10:00:00.000Z',
+            time_zone: 'America/New_York',
+            location: 'Central Park'
+          )
+        end
+      end
+
+      context 'with an event when the feature is disabled' do
+        let(:params) { { status: 'Bring gloves!', event: { name: 'Central Park cleanup', starts_at: '2026-12-31T10:00:00Z' } } }
+
+        it 'ignores the event', :aggregate_failures do
+          expect { subject }.to_not change(Event, :count)
+
+          expect(response).to have_http_status(200)
+          expect(response.parsed_body[:event]).to be_nil
+        end
+      end
+
+      context 'with an event and a poll', feature: :outgoing_events do
+        let(:params) { { status: 'Which one?', event: { name: 'Central Park cleanup', starts_at: '2026-12-31T10:00:00Z' }, poll: { options: %w(A B), expires_in: 1.day.to_i } } }
+
+        it 'returns an error' do
+          subject
+
+          expect(response).to have_http_status(422)
+        end
+      end
+
       context 'without a quote policy' do
         let(:user) do
           Fabricate(:user, settings: { default_quote_policy: 'followers' })
@@ -535,6 +572,28 @@ RSpec.describe '/api/v1/statuses' do
         expect(response.content_type)
           .to start_with('application/json')
         expect(status.reload.text).to eq 'I am updated'
+      end
+
+      context 'when the status has an event', feature: :outgoing_events do
+        let!(:event) { Fabricate(:event, status: status) }
+
+        context 'when changing the event' do
+          let(:params) { { status: status.text, event: { name: 'Rockaway Beach cleanup', starts_at: event.starts_at.iso8601 } } }
+
+          it 'updates the event' do
+            expect { subject }
+              .to change { event.reload.name }.to('Rockaway Beach cleanup')
+          end
+        end
+
+        context 'when the event is left out, as with polls' do
+          let(:params) { { status: status.text } }
+
+          it 'removes the event' do
+            expect { subject }
+              .to change { Event.exists?(event.id) }.to(false)
+          end
+        end
       end
 
       context 'when updating only the quote policy' do

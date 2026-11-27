@@ -37,6 +37,8 @@ class ActivityPub::Activity
         ActivityPub::Activity::Delete
       when 'Follow'
         ActivityPub::Activity::Follow
+      when 'Join'
+        ActivityPub::Activity::Join
       when 'Like'
         ActivityPub::Activity::Like
       when 'Block'
